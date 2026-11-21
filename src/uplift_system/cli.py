@@ -1,9 +1,10 @@
 """Командный интерфейс системы.
 
-Пять команд соответствуют функциональным требованиям главы 1 ВКР:
+Шесть команд соответствуют функциональным требованиям главы 1 ВКР:
   simulate        смоделировать эксперимент и собрать обучающую выборку
   train           обучить uplift-модели по конфигу
   evaluate        посчитать метрики и сравнить стратегии
+  economics       оценить финансовый эффект кампании по каналам
   select-segment  собрать сегмент для рассылки и выгрузить его
   check           прогнать проверки и собрать отчёт
 """
@@ -18,10 +19,12 @@ import pandas as pd
 from . import pipeline
 from .config import load_config
 from .datasets.base import UpliftDataset
-from .datasets.synthetic import make_covariates_for_tests
+from .datasets.synthetic import load_covariates, make_covariates_for_tests
+from .economics.run import main as economics_main
 from .experiment import analyze
 from .experiment.simulate import grid_cells, run_grid
 from .paths import CONFIGS, DATA_INTERIM
+from .segments import builder, export
 
 logger = logging.getLogger("uplift")
 
@@ -65,6 +68,29 @@ def main(argv: list[str] | None = None) -> int:
 
     p_seg = sub.add_parser("select-segment", help="собрать сегмент для рассылки")
     p_seg.add_argument("--config", default="configs/campaign.yaml")
+    p_seg.add_argument(
+        "--sim-config",
+        default="configs/sim_base.yaml",
+        help="конфиг ковариат аудитории: выгрузка + синтетический fallback (YAML)",
+    )
+
+    p_econ = sub.add_parser("economics", help="финансовый эффект кампании по каналам")
+    p_econ.add_argument(
+        "--config",
+        default="configs/campaign.yaml",
+        help="конфиг кампании: ценность отклика, каналы, сценарии SMS, бюджет (YAML)",
+    )
+    p_econ.add_argument(
+        "--sim-config",
+        default="configs/sim_base.yaml",
+        help="конфиг генератора DGP для автономного синтетического прогона (YAML)",
+    )
+    p_econ.add_argument("--n-boot", type=int, default=1000, help="число бутстрап-итераций")
+    p_econ.add_argument(
+        "--out",
+        default=None,
+        help="куда писать CSV (по умолчанию output/tables/<префикс>_economics_<дата>.csv)",
+    )
 
     p_check = sub.add_parser("check", help="прогнать проверки")
     p_check.add_argument("--all", action="store_true")
@@ -76,6 +102,10 @@ def main(argv: list[str] | None = None) -> int:
         return _cmd_train(args)
     if args.command == "evaluate":
         return _cmd_evaluate(args)
+    if args.command == "economics":
+        return _cmd_economics(args)
+    if args.command == "select-segment":
+        return _cmd_select_segment(args)
     raise NotImplementedError(f"команда {args.command} ещё не реализована")
 
 
@@ -179,6 +209,126 @@ def _cmd_evaluate(args: argparse.Namespace) -> int:
     print(result["table"].to_string(index=False))
     logger.info("готово: таблица %s, график %s", csv_path, png_path)
     return 0
+
+
+def _cmd_economics(args: argparse.Namespace) -> int:
+    """Финансовый эффект кампании по каналам: тонкая обёртка над economics.run.
+
+    Вся логика — в economics.run.main: автономный синтетический прогон с seed
+    из конфигов, сводная таблица по каналам (три сценария цены SMS строками)
+    в output/tables и stdout, бутстрап-ДИ по деньгам. Обёртка только пробрасывает
+    аргументы командной строки, чтобы команда жила в общем интерфейсе `uplift`.
+    """
+    forwarded = [
+        "--config",
+        args.config,
+        "--sim-config",
+        args.sim_config,
+        "--n-boot",
+        str(args.n_boot),
+    ]
+    if args.out is not None:
+        forwarded += ["--out", args.out]
+    return economics_main(forwarded)
+
+
+def _cmd_select_segment(args: argparse.Namespace) -> int:
+    """Собирает сегмент рассылки: скоринг, отбор под бюджет и правила, выгрузка.
+
+    Аудитория — ковариаты из --sim-config: выгрузка по ключу covariates.source,
+    а при её отсутствии (в публичном репозитории кэшбэк-файла нет) —
+    синтетический fallback с теми же колонками, воспроизводимый по seed.
+    Скоринг — segments.builder.score_clients моделью campaign.model из
+    models_store/ (конвенция имён train), отбор — segments.builder.select:
+    исключения, отсечка min_uplift, риск-граница и бюджет contacts — размер
+    сегмента бюджет не превышает. Выгрузка — segments.export в форматах standard
+    и ab, каждый в csv и parquet (контракт — docs/EXTERNAL_INTEGRATIONS.md,
+    раздел 3); контрольная группа формата ab не пересекается с сегментом.
+    """
+    logging.basicConfig(level=logging.INFO, format="%(levelname)s %(name)s: %(message)s")
+    cfg = load_config(args.config, required=("campaign", "constraints", "export"))
+    cfg_sim = load_config(args.sim_config, required=("covariates",))
+    logger.info("конфиги загружены: %s, %s", args.config, args.sim_config)
+
+    campaign = cfg["campaign"]
+    features = _audience_features(cfg_sim)
+    scores = builder.score_clients(campaign["model"], features)
+    logger.info("скоринг %s: оценено клиентов %d", campaign["model"], len(scores))
+
+    selected = builder.select(scores, cfg)
+    budget = (cfg.get("constraints") or {}).get("budget_contacts")
+    logger.info("отбор: в сегменте %d из %d (бюджет %s)", len(selected), len(scores), budget)
+
+    paths = _export_segment_files(
+        selected, scores, campaign, cfg.get("export") or {}, int(cfg.get("seed", 42))
+    )
+
+    print(f"\nсегмент кампании {campaign.get('id')}: клиентов {len(selected)}, бюджет {budget}")
+    print(f"  средний uplift сегмента: {selected['uplift_score'].mean():.5f}")
+    if "expected_value_rub" in selected.columns:
+        total_value = selected["expected_value_rub"].sum()
+        print(f"  суммарная ожидаемая ценность контактов: {total_value:.0f} ₽")
+    print("файлы выгрузки:")
+    for path in paths:
+        print(f"  {path}")
+    logger.info("готово: %d файлов выгрузки", len(paths))
+    return 0
+
+
+def _audience_features(cfg_sim: dict) -> pd.DataFrame:
+    """Ковариаты аудитории для скоринга: выгрузка, а при её отсутствии — синтетика.
+
+    Та же логика fallback, что в economics.run: публичный репозиторий не содержит
+    кэшбэк-выгрузки (лицензионные причины), поэтому подставляются искусственные
+    ковариаты с теми же именами колонок — скоринг остаётся воспроизводимым по seed.
+    """
+    source = Path(cfg_sim["covariates"]["source"])
+    if source.exists():
+        return load_covariates(cfg_sim)
+    n_clients = int(cfg_sim.get("sample", {}).get("n_clients", 50_000))
+    seed = int(cfg_sim.get("seed", 42))
+    logger.warning(
+        "выгрузка %s не найдена: аудитория заменена синтетической (n=%d, seed=%d)",
+        source,
+        n_clients,
+        seed,
+    )
+    return make_covariates_for_tests(n=n_clients, seed=seed)
+
+
+def _export_segment_files(
+    selected: pd.DataFrame,
+    scores: pd.DataFrame,
+    campaign: dict,
+    export_cfg: dict,
+    seed: int,
+) -> list[Path]:
+    """Пишет выгрузки сегмента: форматы standard и ab, каждый в csv и parquet.
+
+    Имена и состав колонок — конвенция segments.export: <префикс>_segment_<кампания>
+    и <префикс>_segment_ab_<кампания>; колонки — export.columns конфига, у формата
+    ab в конец добавляется group (target | control). Контрольная группа доли
+    export.control_share выбирается из оценённой аудитории вне сегмента, поэтому
+    пересечения с целевой выгрузкой нет по построению.
+    """
+    campaign_id = campaign.get("id", "campaign")
+    columns = export_cfg.get("columns")
+    control_share = float(export_cfg.get("control_share", 0.1))
+    paths = []
+    for fmt in ("csv", "parquet"):
+        paths.append(export.export_segment(selected, campaign_id, fmt=fmt, columns=columns))
+        paths.append(
+            export.export_segment_ab(
+                selected,
+                scores,
+                campaign_id,
+                control_share=control_share,
+                seed=int(seed),
+                fmt=fmt,
+                columns=columns,
+            )
+        )
+    return paths
 
 
 def _covariates_for_simulation(cfg_sim: dict) -> pd.DataFrame | None:
