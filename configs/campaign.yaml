@@ -9,6 +9,9 @@ campaign:
 
 economics:
   # ценность отклика — невыплаченный банковский кэшбэк, медиана по выгрузке
+  # (docs/DATA_PASSPORT.md, ЭКОНОМИКА). response_value_rub читает модуль economics;
+  # value_per_response_rub — алиас для сборщика сегментов, значение то же
+  response_value_rub: 120
   value_per_response_rub: 120
   vat_included: false            # цены без НДС (docs/cost_inputs.yaml, meta)
   price_level: 2026-06

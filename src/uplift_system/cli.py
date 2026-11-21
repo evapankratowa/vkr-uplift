@@ -15,12 +15,13 @@ from pathlib import Path
 
 import pandas as pd
 
+from . import pipeline
 from .config import load_config
 from .datasets.base import UpliftDataset
 from .datasets.synthetic import make_covariates_for_tests
 from .experiment import analyze
 from .experiment.simulate import grid_cells, run_grid
-from .paths import DATA_INTERIM
+from .paths import CONFIGS, DATA_INTERIM
 
 logger = logging.getLogger("uplift")
 
@@ -45,9 +46,22 @@ def main(argv: list[str] | None = None) -> int:
     p_train = sub.add_parser("train", help="обучить модели")
     p_train.add_argument("--config", default="configs/models.yaml")
     p_train.add_argument("--dataset", default=None, help="synthetic | x5 | hillstrom")
+    p_train.add_argument(
+        "--source",
+        choices=["file", "db"],
+        default="file",
+        help="источник ковариат для synthetic: файл из конфига или PostgreSQL (DATABASE_URL)",
+    )
 
     p_eval = sub.add_parser("evaluate", help="метрики и сравнение стратегий")
     p_eval.add_argument("--config", default="configs/models.yaml")
+    p_eval.add_argument("--dataset", default=None, help="synthetic | x5 | hillstrom")
+    p_eval.add_argument(
+        "--source",
+        choices=["file", "db"],
+        default="file",
+        help="тот же источник данных, что был у train: evaluate восстанавливает выборку заново",
+    )
 
     p_seg = sub.add_parser("select-segment", help="собрать сегмент для рассылки")
     p_seg.add_argument("--config", default="configs/campaign.yaml")
@@ -58,6 +72,10 @@ def main(argv: list[str] | None = None) -> int:
     args = parser.parse_args(argv)
     if args.command == "simulate":
         return _cmd_simulate(args)
+    if args.command == "train":
+        return _cmd_train(args)
+    if args.command == "evaluate":
+        return _cmd_evaluate(args)
     raise NotImplementedError(f"команда {args.command} ещё не реализована")
 
 
@@ -104,6 +122,62 @@ def _cmd_simulate(args: argparse.Namespace) -> int:
     print("\nсводка по ячейкам сетки:")
     print(summary.to_string(index=False))
     logger.info("готово: %d файлов в %s", len(rows), DATA_INTERIM)
+    return 0
+
+
+def _load_configs(args: argparse.Namespace) -> tuple[dict, dict, dict]:
+    """Конфиги команды: модели (из --config), генератора и дизайна (из configs/)."""
+    cfg_models = load_config(args.config, required=("base_learner", "architectures"))
+    cfg_sim = load_config(CONFIGS / "sim_base.yaml", required=("covariates", "effect", "sample"))
+    cfg_exp = load_config(CONFIGS / "experiment.yaml", required=("grid",))
+    logger.info("конфиги загружены: %s", args.config)
+    return cfg_models, cfg_sim, cfg_exp
+
+
+def _cmd_train(args: argparse.Namespace) -> int:
+    """Обучает включённые архитектуры: joblib в models_store/ плюс манифест.
+
+    Выборка — последний parquet из data/interim (или --dataset: synthetic
+    прогоняет DGP на ковариатах из --source, x5/hillstrom — открытые RCT).
+    Модели сериализуются по конвенции models_store/<имя>.joblib, которую читает
+    segments.builder.score_clients; манифест несёт параметры, хеш конфига и дату.
+    """
+    logging.basicConfig(level=logging.INFO, format="%(levelname)s %(name)s: %(message)s")
+    cfg_models, cfg_sim, cfg_exp = _load_configs(args)
+
+    dataset = pipeline.load_training_dataset(args.dataset, args.source, cfg_sim, cfg_exp)
+    train, _ = pipeline.split_for_evaluation(dataset, cfg_models, cfg_exp)
+    logger.info("выборка %s: клиентов %d, обучение на %d", dataset.name, dataset.n, train.n)
+
+    stats = pipeline.train_models(cfg_models, train)
+    manifest_path = pipeline.write_manifest(cfg_models, train, Path(args.config), stats)
+    print("\nобученные модели:")
+    print(stats.to_string(index=False))
+    logger.info(
+        "готово: %d моделей в %s, манифест %s", len(stats), pipeline.MODELS_STORE, manifest_path
+    )
+    return 0
+
+
+def _cmd_evaluate(args: argparse.Namespace) -> int:
+    """Считает метрики обученных моделей: таблица в output/tables, Qini в output/figures.
+
+    Выборка восстанавливается тем же резолвером, что у train (дефолт — последний
+    parquet из data/interim), нарезка на части общая и детерминированная. Таблица
+    повторяет колонки эталона VKR_uplift_architectures_<дата>.csv; график —
+    кривые Qini всех включённых моделей на отложенной выборке.
+    """
+    logging.basicConfig(level=logging.INFO, format="%(levelname)s %(name)s: %(message)s")
+    cfg_models, cfg_sim, cfg_exp = _load_configs(args)
+
+    dataset = pipeline.load_training_dataset(args.dataset, args.source, cfg_sim, cfg_exp)
+    result = pipeline.run_evaluation(cfg_models, dataset, cfg_exp=cfg_exp)
+    run_date = date.today().isoformat()
+    csv_path, png_path = pipeline.write_outputs(result, run_date)
+
+    print("\nметрики архитектур (отложенная выборка):")
+    print(result["table"].to_string(index=False))
+    logger.info("готово: таблица %s, график %s", csv_path, png_path)
     return 0
 
 
