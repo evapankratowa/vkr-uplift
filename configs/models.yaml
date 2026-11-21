@@ -4,7 +4,10 @@ seed: 42
 
 base_learner:
   kind: catboost
-  params: {iterations: 300, learning_rate: 0.05, depth: 6, verbose: false}
+  # thread_count: 1 — детерминизм между машинами: CatBoost при разном числе
+  # потоков даёт разные модели, а золотые эталоны (tests/golden/) сверяются
+  # с допуском 1e-6 (тикет T8)
+  params: {iterations: 300, learning_rate: 0.05, depth: 6, verbose: false, thread_count: 1}
 
 architectures:
   # этап 4 — базовые

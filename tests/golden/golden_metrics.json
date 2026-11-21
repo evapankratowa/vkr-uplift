@@ -1,0 +1,80 @@
+{
+  "n_clients": 2000,
+  "repeats": 1,
+  "architectures": {
+    "s_learner": {
+      "qini_holdout": -0.0077521359113916,
+      "value_at_30pct": 0.4404151201724525
+    },
+    "t_learner": {
+      "qini_holdout": -0.0212441759652564,
+      "value_at_30pct": 0.4146356162961737
+    },
+    "x_learner": {
+      "qini_holdout": -0.0085220331251524,
+      "value_at_30pct": 0.404614754428852
+    },
+    "class_transformation": {
+      "qini_holdout": 0.0133396738130534,
+      "value_at_30pct": 0.2577498427161945
+    },
+    "response_model": {
+      "qini_holdout": 0.0180406302515717,
+      "value_at_30pct": 0.2258405361854417
+    },
+    "random": {
+      "qini_holdout": -0.0137408528416417,
+      "value_at_30pct": 0.1946439519718308
+    }
+  },
+  "economics": {
+    "push|base": {
+      "threshold": 0.0013020833333333,
+      "n_contacts": 1739,
+      "n_incremental": 100.70879287988652,
+      "effect_rub": 11867.680145586382,
+      "ci_low": 10795.12089692376,
+      "ci_high": 12926.385134464068
+    },
+    "sms|base": {
+      "threshold": 0.0479166666666666,
+      "n_contacts": 350,
+      "n_incremental": 81.63816289417188,
+      "effect_rub": 7784.079547300627,
+      "ci_low": 7165.7751503989475,
+      "ci_high": 8432.908690895096
+    },
+    "call|base": {
+      "threshold": 0.375,
+      "n_contacts": 65,
+      "n_incremental": 30.240960614080542,
+      "effect_rub": 703.9152736896655,
+      "ci_low": 553.3991906446886,
+      "ci_high": 849.5525580402943
+    },
+    "robocall|base": {
+      "threshold": 0.0458333333333333,
+      "n_contacts": 353,
+      "n_incremental": 81.78053039917478,
+      "effect_rub": 7872.163647900975,
+      "ci_low": 7279.5607213825615,
+      "ci_high": 8525.256501737129
+    },
+    "sms|sms_source_2024": {
+      "threshold": 0.0266666666666666,
+      "n_contacts": 499,
+      "n_incremental": 86.50533847660489,
+      "effect_rub": 8783.840617192587,
+      "ci_low": 8006.89748686107,
+      "ci_high": 9573.281849447876
+    },
+    "sms|sms_packet_megafon": {
+      "threshold": 0.25,
+      "n_contacts": 143,
+      "n_incremental": 54.284920507767865,
+      "effect_rub": 2224.1904609321437,
+      "ci_low": 1972.2343695385523,
+      "ci_high": 2523.2910073937096
+    }
+  }
+}

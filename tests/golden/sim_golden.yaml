@@ -1,0 +1,50 @@
+# Малая конфигурация для золотых эталонов (tests/test_golden.py, тикет T8).
+# Полная копия configs/sim_base.yaml с одним отличием: 2000 клиентов вместо
+# 50 000 — эталонный прогон обязан укладываться в минуты, а не в дефолтные
+# 30–40 минут. Прочие параметры DGP (seed, исходы, эффект, драйверы) — те же.
+
+seed: 42
+
+covariates:
+  source: data/raw/cashback_raw_2022-11-15.csv
+  id_column: client_id
+  drop_columns: [Taxi, Taxi_before]
+  log1p_transform: true
+  # счётчики витрины — ковариаты вовлечённости, НЕ шаги воронки (решение №13)
+  engagement_columns: [cnt_view, cnt_activation, cnt_communication]
+
+target:
+  # целевое действие: покупка с партнёрским кэшбэком в окне «после»
+  name: partner_purchase
+  base_rate: 0.48            # факт выгрузки: доля 0.4795
+  # промежуточный шаг — прокси-метрика статьи
+  proxy_name: offer_activation
+  proxy_base_rate: 0.55      # активация чаще покупки: метрика дешёвая и массовая
+  risk_name: bank_cashback_payout
+  risk_base_rate: 0.38       # факт выгрузки: доля 0.3838
+
+response:
+  noise_sd: 0.35
+  linear_terms: auto
+
+effect:
+  # 10-concepts/Четыре сегмента клиентов.md
+  segment_shares: {persuadable: 0.20, sure_thing: 0.25, lost_cause: 0.45, sleeping_dog: 0.10}
+  segment_noise_sd: 0.5      # шум в ранжировании при нарезке сегментов
+  ate_target: 0.03           # истинный ATE по покупке, в долях
+  ate_proxy: 0.08            # по активации: эффект крупнее, метрика чувствительнее
+  heterogeneity: 0.6         # 0 — эффект константен, 1 — целиком от драйверов
+  drivers: [cb_merch_before, cnt_activation, Supermarkets_before]
+  proxy_drivers: [cnt_view, cnt_activation]
+
+  # ДВЕ РУЧКИ СВЯЗИ ДВУХ ИСХОДОВ — их нельзя путать (решение №22):
+  rho_base: 0.7              # корреляция УРОВНЕЙ: вовлечённые и активируют, и покупают
+  proxy_mix: 0.7             # вес смеси форм ЭФФЕКТА: 1 — тот же механизм, 0 — свой
+  rho_err: 0.5               # корреляция ошибок: совместная реализация исходов
+
+money:
+  partner_cashback_median_rub: 206
+  bank_cashback_median_rub: 120
+
+sample:
+  n_clients: 2000            # золотой эталон: малая выборка вместо 50000
