@@ -62,3 +62,7 @@ constraints:
 export:
   format: csv
   columns: [client_id, uplift_score, risk_score, expected_value_rub, decile, campaign_id]
+  # формат ab: удерживаемая контрольная группа, доля от размера целевого сегмента.
+  # Не пересекается с сегментом (выборка из оценённой аудитории вне его), нужна
+  # для последующей оценки эффекта кампании (docs/EXTERNAL_INTEGRATIONS.md, раздел 3).
+  control_share: 0.1

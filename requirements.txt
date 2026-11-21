@@ -19,3 +19,6 @@ jupyterlab
 # --- инструменты
 ruff
 pytest
+# --- база данных (слой db, тикет T3)
+psycopg[binary]==3.3.9   # драйвер PostgreSQL
+SQLAlchemy==2.1.9        # ядро SQLAlchemy 2.x (>=2 по ТЗ)
