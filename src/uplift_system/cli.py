@@ -17,13 +17,15 @@ from pathlib import Path
 import pandas as pd
 
 from . import pipeline
+from .checks import cards
+from .checks.runner import CheckRunner
 from .config import load_config
 from .datasets.base import UpliftDataset
 from .datasets.synthetic import load_covariates, make_covariates_for_tests
 from .economics.run import main as economics_main
 from .experiment import analyze
 from .experiment.simulate import grid_cells, run_grid
-from .paths import CONFIGS, DATA_INTERIM
+from .paths import CHECKS, CONFIGS, DATA_INTERIM
 from .segments import builder, export
 
 logger = logging.getLogger("uplift")
@@ -92,8 +94,27 @@ def main(argv: list[str] | None = None) -> int:
         help="куда писать CSV (по умолчанию output/tables/<префикс>_economics_<дата>.csv)",
     )
 
-    p_check = sub.add_parser("check", help="прогнать проверки")
-    p_check.add_argument("--all", action="store_true")
+    p_check = sub.add_parser("check", help="прогнать проверки и собрать отчёт")
+    p_check.add_argument(
+        "--all",
+        action="store_true",
+        help="прогнать все карточки проверок (сейчас единственный режим)",
+    )
+    p_check.add_argument(
+        "--config",
+        default="configs/sim_base.yaml",
+        help="конфиг генератора DGP: контрольные числа синтетики (YAML)",
+    )
+    p_check.add_argument(
+        "--experiment",
+        default="configs/experiment.yaml",
+        help="конфиг дизайна: уровень значимости и прогоны A/A (YAML)",
+    )
+    p_check.add_argument(
+        "--out-dir",
+        default=None,
+        help="куда писать отчёт (по умолчанию checks/)",
+    )
 
     args = parser.parse_args(argv)
     if args.command == "simulate":
@@ -106,6 +127,8 @@ def main(argv: list[str] | None = None) -> int:
         return _cmd_economics(args)
     if args.command == "select-segment":
         return _cmd_select_segment(args)
+    if args.command == "check":
+        return _cmd_check(args)
     raise NotImplementedError(f"команда {args.command} ещё не реализована")
 
 
@@ -230,6 +253,52 @@ def _cmd_economics(args: argparse.Namespace) -> int:
     if args.out is not None:
         forwarded += ["--out", args.out]
     return economics_main(forwarded)
+
+
+def _cmd_check(args: argparse.Namespace) -> int:
+    """Прогоняет все карточки проверок и собирает отчёт в checks/.
+
+    Контрольные числа — DATA_PASSPORT.md как ассерты с допусками (синтетика,
+    выгрузка кэшбэка, X5, Hillstrom), плюс целостность артефактов пайплайна
+    (манифест моделей против configs/models.yaml, таблицы evaluate/economics,
+    выгрузки сегмента). Отчёт пишется дважды: checks/checks.json
+    (machine-readable, фиксированное имя) и checks/checks_<дата>.md (для
+    человека). Код возврата 1, если есть хоть одна красная проверка; проверки
+    без входа (сырые данные, сеть, непрогнанные команды) жёлтые и не роняют
+    команду.
+    """
+    logging.basicConfig(level=logging.INFO, format="%(levelname)s %(name)s: %(message)s")
+    cfg_sim = load_config(args.config, required=("covariates", "effect", "sample"))
+    cfg_exp = load_config(args.experiment, required=("grid", "design", "validation"))
+    logger.info("конфиги загружены: %s, %s", args.config, args.experiment)
+
+    runner = CheckRunner(cards.build_checks(cfg_sim, cfg_exp))
+    runner.run()
+
+    out_dir = Path(args.out_dir) if args.out_dir else CHECKS
+    out_dir.mkdir(parents=True, exist_ok=True)
+    json_path = runner.to_json(out_dir / "checks.json")
+    markdown_path = out_dir / f"checks_{date.today().isoformat()}.md"
+    markdown_path.write_text(runner.to_markdown(), encoding="utf-8")
+
+    print(runner.to_markdown())
+    counts = runner.counts()
+    if runner.exit_code:
+        logger.error(
+            "красных проверок: %d — отчёт: %s, %s",
+            counts["red"],
+            json_path,
+            markdown_path,
+        )
+    else:
+        logger.info(
+            "готово: зелёных %d, жёлтых %d — отчёт: %s, %s",
+            counts["green"],
+            counts["yellow"],
+            json_path,
+            markdown_path,
+        )
+    return runner.exit_code
 
 
 def _cmd_select_segment(args: argparse.Namespace) -> int:
