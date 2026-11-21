@@ -1,0 +1,23 @@
+# Окружения и кеши
+.venv/
+__pycache__/
+*.pyc
+.ruff_cache/
+.ipynb_checkpoints/
+.pytest_cache/
+.DS_Store
+
+# Данные: скачиваются скриптом, в репозитории не хранятся
+data/raw/*
+data/interim/*
+data/processed/*
+!data/**/.gitkeep
+
+# Производные артефакты: пересоздаются прогоном пайплайна
+output/*
+!output/**/.gitkeep
+
+# Секреты
+.env
+*.pem
+*.key

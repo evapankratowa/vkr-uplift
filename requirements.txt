@@ -1,0 +1,21 @@
+# версии фиксируются после первой установки: pip freeze > requirements.lock.txt
+# --- ядро
+numpy
+pandas
+pyarrow
+scipy
+scikit-learn
+statsmodels
+pyyaml
+requests               # скачивание открытых наборов в data/raw
+# --- модели
+catboost
+scikit-uplift          # метрики uplift, загрузчики открытых RCT (X5, Hillstrom)
+econml                 # DR-learner, R-learner, Causal Forest (этап 5, опционально)
+# --- графика и ноутбуки
+matplotlib
+seaborn
+jupyterlab
+# --- инструменты
+ruff
+pytest

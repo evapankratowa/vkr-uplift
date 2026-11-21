@@ -1,0 +1,27 @@
+# Архитектуры сравнения. Все мета-лернеры на одном базовом ML, иначе сравнение
+# меряет бустинг, а не архитектуру — 10-concepts/Выбор uplift-архитектуры.md, п.6.
+seed: 42
+
+base_learner:
+  kind: catboost
+  params: {iterations: 300, learning_rate: 0.05, depth: 6, verbose: false}
+
+architectures:
+  # этап 4 — базовые
+  - {name: s_learner, enabled: true}
+  - {name: t_learner, enabled: true}
+  - {name: x_learner, enabled: true}
+  - {name: class_transformation, enabled: true}
+  # этап 5 — устойчивые к смещению и с доверительными интервалами
+  - {name: dr_learner, enabled: false}
+  - {name: r_learner, enabled: false}
+  - {name: causal_forest, enabled: false}
+
+baselines:
+  - {name: random, enabled: true}        # случайный отбор
+  - {name: response_model, enabled: true} # прогнозная модель отклика — то, с чем сравниваемся
+
+evaluation:
+  k_grid: [0.05, 0.1, 0.2, 0.3, 0.5]    # доли аудитории для uplift@k
+  n_bootstrap: 1000
+  n_buckets: 10

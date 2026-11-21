@@ -1,0 +1,64 @@
+# Параметры кампании для сборщика сегментов. Отбор — условная оптимизация:
+# max sum(uplift_i * ценность_i - стоимость_канала) при ограничениях (решение №10).
+seed: 42
+
+campaign:
+  id: demo_2026_11
+  model: x_learner
+  channel: push
+
+economics:
+  # ценность отклика — невыплаченный банковский кэшбэк, медиана по выгрузке
+  value_per_response_rub: 120
+  vat_included: false            # цены без НДС (docs/cost_inputs.yaml, meta)
+  price_level: 2026-06
+
+  # Источники и оговорки по каждой цифре — docs/cost_inputs.yaml,
+  # описания источников — docs/sources.yaml. Здесь только то, что читает код.
+  #
+  # Порог отбора зависит от модели оплаты:
+  #   payment: send      -> порог = cost / (value * deliverability)
+  #   payment: connected -> порог = cost / value   (доставляемость сокращается:
+  #                         платим только за состоявшийся контакт)
+  channels:
+    push:
+      cost_per_contact_rub: 0.125
+      payment: send
+      deliverability: 0.80
+      enabled: true              # порог 0.13 п.п.
+    sms:
+      cost_per_contact_rub: 5.75
+      payment: send
+      deliverability: null       # открытых данных нет; порог 4.79 п.п. — оптимистичная граница
+      enabled: true
+    call:
+      cost_per_contact_rub: 45.0
+      payment: connected
+      deliverability: 0.50
+      enabled: true              # порог 37.5 п.п. — канал выпадает из отбора, и это вывод
+    robocall:
+      cost_per_contact_rub: 5.5  # вилка 4–7 ₽, взята середина
+      payment: connected
+      deliverability: 0.50
+      enabled: false             # включать, только если глава 3 рассматривает робота
+
+  # Сценарии для проверки устойчивости (проверка №25), не для основного прогона
+  scenarios:
+    sms_source_2024: {channel: sms, cost_per_contact_rub: 3.2}    # цифра из Frank RG дословно
+    sms_packet_megafon: {channel: sms, cost_per_contact_rub: 30.0} # 1 контакт в месяц по пакетному тарифу
+
+constraints:
+  budget_contacts: 15000
+  min_uplift: 0.0                    # не берём клиентов с отрицательным uplift
+  risk_uplift_max: 0.002             # верхняя граница 95% ДИ uplift по выплатам банка
+  exclude_segments: []
+  max_campaigns_per_client: 1
+  cooldown_days: 14
+  # комплаенс (Б5): формулировки требований — за автором работы
+  require_consent: true
+  quiet_hours: [22, 9]
+  max_contacts_per_month: 4
+
+export:
+  format: csv
+  columns: [client_id, uplift_score, risk_score, expected_value_rub, decile, campaign_id]

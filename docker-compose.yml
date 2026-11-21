@@ -1,0 +1,38 @@
+# Развёртывание системы без внешних зависимостей.
+# Внешние зависимости (Zeppelin, система рассылок, источник результатов A/B)
+# осознанно НЕ входят — их контракты описаны в docs/EXTERNAL_INTEGRATIONS.md.
+services:
+  db:
+    image: postgres:16
+    environment:
+      POSTGRES_DB: uplift
+      POSTGRES_USER: uplift
+      POSTGRES_PASSWORD: uplift   # учебный стенд, не для продуктива
+    volumes:
+      # DDL схем uplift и uplift_dw применяется при первом старте контейнера
+      - ./db/001_init.sql:/docker-entrypoint-initdb.d/001_init.sql:ro
+      - pgdata:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U uplift -d uplift"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  app:
+    build: .
+    depends_on:
+      db:
+        condition: service_healthy
+    volumes:
+      - ./data:/app/data
+      - ./output:/app/output
+      - ./configs:/app/configs
+    environment:
+      DATABASE_URL: postgresql://uplift:uplift@db:5432/uplift
+    # По умолчанию прогоняет весь пайплайн: simulate -> train -> evaluate -> segments -> checks.
+    # Отдельный этап: docker compose run --rm app make simulate
+
+volumes:
+  pgdata:

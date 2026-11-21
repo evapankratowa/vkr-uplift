@@ -1,0 +1,41 @@
+# Дизайн эксперимента для набора обучающей выборки.
+# Ось base_rate убрана: целевое действие частое (решение №12).
+seed: 42
+
+design:
+  alpha: 0.05
+  power: 0.80
+  base_rate: 0.48
+  mde_absolute: 0.0125
+  alternative: two-sided
+
+# Сетка под статью: ось доли контроля и сиды. Размер выборки и сила эффекта —
+# отдельным прогоном в приложении, иначе 81 ячейка не укладывается в часы.
+grid:
+  n_total: [50000]
+  control_share: [0.5, 0.3, 0.1]
+  effect_scale: [1.0]
+  repeats: 5
+
+# Приложение к статье: как качество зависит от размера выборки
+grid_size_appendix:
+  n_total: [5000, 20000, 50000]
+  control_share: [0.5]
+  effect_scale: [1.0]
+  repeats: 3
+
+# Основной результат статьи: прокси против целевого при разной связи эффектов
+grid_proxy_mix:
+  values: [1.0, 0.7, 0.4, 0.0]
+  repeats: 5
+  control_share: 0.3
+  n_total: 50000
+
+split:
+  method: bernoulli
+  stratify_by: null
+
+validation:
+  aa_test: true
+  aa_runs: 1000
+  holdout_share: 0.3         # метрики считаются ТОЛЬКО на отложенной части

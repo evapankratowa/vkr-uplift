@@ -1,0 +1,26 @@
+[project]
+name = "uplift-system"
+version = "0.1.0"
+description = "ВКР: система uplift-моделирования для отбора сегментов коммуникации"
+requires-python = ">=3.10"
+
+[project.scripts]
+uplift = "uplift_system.cli:main"
+
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py310"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B", "SIM", "PD"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q"

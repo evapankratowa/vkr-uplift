@@ -1,0 +1,802 @@
+# Реестр внешних источников проекта — единственное место, где они описаны.
+# На него ссылаются PLAN.md, DECISIONS.md, DATA_PASSPORT.md и главы ВКР: в тексте
+# указывается id, полное описание берётся отсюда.
+#
+# ОФОРМЛЕНИЕ. Поле gost заполнено по ГОСТ Р 7.0.100–2018 (описание) и
+# ГОСТ Р 7.0.5–2008 (ссылки), методичка библиотеки ИЦО РАНХиГС —
+# archive/ВКР/-РАНХ и ГС- составление списка литературы к ВКР.pdf
+# Правила, которые чаще всего нарушают:
+#   - 1–3 автора: описание начинается с фамилии первого; 4 и более — с заглавия,
+#     за косой чертой перечисляются все четыре, при пяти и более — трое и [и др.];
+#   - размер тире в «точка пробел тире» . – единый во всём списке;
+#   - [Текст] и [Электронный ресурс] больше не используются;
+#   - для сетевых ресурсов обязательны URL и дата обращения;
+#   - иностранные источники образуют отдельный алфавитный ряд ПОСЛЕ русских,
+#     нумерация при этом сквозная. Поле lang нужно для этой сортировки.
+#
+# ГРЕЙД НАДЁЖНОСТИ (наш внутренний, в список литературы не идёт):
+#   A — рецензируемая публикация, официальный прайс или документация;
+#   B — отраслевое исследование, бенчмарк, заметка личной базы знаний;
+#   C — публикация в СМИ, корпоративный блог;
+#   D — форум, пост без подтверждения. Источники грейда D в работу не берём.
+#
+# used_in — где источник уже используется. Заполняется по ходу, чтобы в конце
+# было видно, какие источники реально сработали, а какие лежат мёртвым грузом.
+
+meta:
+  updated: 2026-09-19
+  standard: "ГОСТ Р 7.0.100–2018, ГОСТ Р 7.0.5–2008"
+  count_target: "50–60 источников в списке литературы ВКР (требование Положения о ГИА)"
+
+sources:
+
+  # ——— метод: uplift и causal inference ———
+
+  - id: kharlamov-2025
+    kind: conference
+    lang: en
+    authors: [Kharlamov V.V.]
+    affiliation: "T-Bank, Applied Statistics Laboratory"
+    title: "Conditional Optimization in Uplift Modeling"
+    container: "Computer Data Analysis and Modeling: Stochastics and Data Science"
+    place: Minsk
+    year: 2025
+    pages: "119–122"
+    url: https://conf.bsu.by/CDAM_en
+    accessed: 2026-09-19
+    grade: A
+    used_in: [PLAN.md Б3, PLAN.md Б4, "DECISIONS №15", "DECISIONS №16"]
+    note: >-
+      Опорная работа. Теорема 1 — скаляризация с весом w решает задачу с
+      ограничением; Теорема 2 — несмещённая оценка ценности политики; Допущение 1 —
+      propensity не зависит от ковариат. Прочитана полностью. Нумерация страниц
+      сверена по PDF сборника: заголовок на с. 119, последняя страница 122 —
+      подтвердить визуально по бумажному оглавлению.
+    gost: >-
+      Kharlamov, V. V. Conditional Optimization in Uplift Modeling / V. V. Kharlamov
+      // Computer Data Analysis and Modeling: Stochastics and Data Science. – Minsk,
+      2025. – P. 119–122. – URL: https://conf.bsu.by/CDAM_en (дата обращения: 19.09.2026).
+
+  - id: kunzel-2019
+    kind: article
+    lang: en
+    authors: [Künzel S. R., Sekhon J. S., Bickel P. J., Yu B.]
+    title: "Metalearners for estimating heterogeneous treatment effects using machine learning"
+    container: "Proceedings of the National Academy of Sciences"
+    year: 2019
+    volume: 116
+    issue: 10
+    pages: "4156–4165"
+    url: https://www.pnas.org/doi/10.1073/pnas.1804597116
+    accessed: 2026-09-19
+    grade: A
+    used_in: [PLAN.md источники, "DECISIONS №5"]
+    note: "Первоисточник X-learner и схема симуляционного сравнения мета-лернеров. Четыре автора — описание под заглавием."
+    gost: >-
+      Metalearners for estimating heterogeneous treatment effects using machine
+      learning / S. R. Künzel, J. S. Sekhon, P. J. Bickel, B. Yu // Proceedings of
+      the National Academy of Sciences. – 2019. – Vol. 116, № 10. – P. 4156–4165. –
+      URL: https://www.pnas.org/doi/10.1073/pnas.1804597116 (дата обращения: 19.09.2026).
+
+  - id: zhao-2017
+    kind: conference
+    lang: en
+    authors: [Zhao Y., Fang X., Simchi-Levi D.]
+    title: "Uplift Modeling with Multiple Treatments and General Response Types"
+    container: "Proceedings of the SIAM International Conference on Data Mining"
+    publisher: "Society for Industrial and Applied Mathematics"
+    year: 2017
+    pages: "588–596"
+    grade: A
+    used_in: ["DECISIONS №16"]
+    note: "Формальная рамка uplift с несколькими воздействиями; первоисточник оценки из Теоремы 2 Харламова. Взят из его списка литературы, самостоятельно не прочитан."
+    gost: >-
+      Zhao, Y. Uplift Modeling with Multiple Treatments and General Response Types /
+      Y. Zhao, X. Fang, D. Simchi-Levi // Proceedings of the SIAM International
+      Conference on Data Mining. – Society for Industrial and Applied Mathematics,
+      2017. – P. 588–596.
+
+  - id: athey-2016
+    kind: article
+    lang: en
+    authors: [Athey S., Imbens G.]
+    title: "Recursive partitioning for heterogeneous causal effects"
+    container: "Proceedings of the National Academy of Sciences"
+    year: 2016
+    volume: 113
+    issue: 27
+    pages: "7353–7360"
+    grade: A
+    used_in: [PLAN.md этап 10]
+    note: "Causal forest; у Харламова именно он применён для оценки эффектов. Взят из его списка литературы."
+    gost: >-
+      Athey, S. Recursive partitioning for heterogeneous causal effects / S. Athey,
+      G. Imbens // Proceedings of the National Academy of Sciences. – 2016. –
+      Vol. 113, № 27. – P. 7353–7360.
+
+  - id: gutierrez-2017
+    kind: conference
+    lang: en
+    authors: [Gutierrez P., Gérardy J.-Y.]
+    title: "Causal inference and uplift modelling: A review of the literature"
+    container: "International Conference on Predictive Applications and APIs"
+    publisher: PMLR
+    year: 2017
+    pages: "1–13"
+    grade: B
+    used_in: []
+    note: "Обзор и определение AUUC. Взят из списка литературы Харламова."
+    gost: >-
+      Gutierrez, P. Causal inference and uplift modelling: A review of the literature /
+      P. Gutierrez, J.-Y. Gérardy // International Conference on Predictive
+      Applications and APIs. – PMLR, 2017. – P. 1–13.
+
+  - id: diemert-2021
+    kind: preprint
+    lang: en
+    authors: [Diemert E., Betlei A., Renaudin C., Amini M.-R.]
+    title: "A Large Scale Benchmark for Individual Treatment Effect Prediction and Uplift Modeling"
+    year: 2021
+    url: https://arxiv.org/pdf/2111.10106
+    accessed: 2026-09-19
+    grade: B
+    used_in: [PLAN.md источники]
+    note: "Протокол сравнения uplift-моделей и метрик на индустриальных данных. Четыре автора — под заглавием."
+    gost: >-
+      A Large Scale Benchmark for Individual Treatment Effect Prediction and Uplift
+      Modeling / E. Diemert, A. Betlei, C. Renaudin, M.-R. Amini. – 2021. – URL:
+      https://arxiv.org/pdf/2111.10106 (дата обращения: 19.09.2026).
+
+  - id: sklift-docs
+    kind: documentation
+    lang: en
+    title: "scikit-uplift: documentation"
+    year: 2026
+    url: https://www.uplift-modeling.com/en/latest/
+    accessed: 2026-09-19
+    grade: A
+    used_in: ["DECISIONS №8", "проверка №5"]
+    note: "Эталон для сверки собственных реализаций Qini, AUUC, uplift@k. Там же загрузчики открытых наборов."
+    gost: >-
+      scikit-uplift : documentation : сайт. – URL:
+      https://www.uplift-modeling.com/en/latest/ (дата обращения: 19.09.2026).
+
+  # ——— данные ———
+
+  - id: x5-retailhero
+    kind: dataset
+    lang: ru
+    title: "X5 Retail Hero: Uplift Modeling for Promotional Campaign"
+    publisher: "Open Data Science"
+    year: 2020
+    url: https://ods.ai/competitions/x5-retailhero-uplift-modeling
+    accessed: 2026-09-19
+    grade: B
+    used_in: [PLAN.md Б7, "DECISIONS №4"]
+    note: "Настоящий RCT: SMS-кампания, ~200 тыс. клиентов. Внешняя проверка устойчивости выводов. Ритейл, не банк."
+    gost: >-
+      X5 Retail Hero: Uplift Modeling for Promotional Campaign : соревнование /
+      Open Data Science : сайт. – URL:
+      https://ods.ai/competitions/x5-retailhero-uplift-modeling (дата обращения: 19.09.2026).
+
+  - id: hillstrom-minethatdata
+    kind: dataset
+    lang: en
+    authors: [Hillstrom K.]
+    title: "MineThatData E-Mail Analytics And Data Mining Challenge"
+    year: 2008
+    url: https://blog.minethatdata.com/2008/03/minethatdata-e-mail-analytics-and-data.html
+    accessed: 2026-10-01
+    grade: B
+    used_in: [DATA_PASSPORT.md источник 3, "datasets/open_data.py"]
+    note: >-
+      64 000 клиентов, три случайные ветки: письмо про мужской ассортимент,
+      про женский, без письма. visit около 0.15, conversion около 0.009.
+      Быстрый RCT для смоук-теста конвейера. Копия набора распространяется
+      вместе с scikit-uplift.
+    gost: >-
+      Hillstrom, K. MineThatData E-Mail Analytics And Data Mining Challenge :
+      набор данных // MineThatData : сайт. – 2008. – URL:
+      https://blog.minethatdata.com/2008/03/minethatdata-e-mail-analytics-and-data.html
+      (дата обращения: 01.10.2026).
+
+  - id: t-ecd
+    kind: dataset
+    lang: en
+    title: "T-ECD: T-Tech E-commerce Cross-Domain Dataset"
+    publisher: "Т-Технологии"
+    year: 2025
+    url: https://huggingface.co/datasets/t-tech/T-ECD
+    accessed: 2026-09-19
+    grade: B
+    license: "CC BY-NC-SA 4.0"
+    used_in: [PLAN.md Б6, PLAN.md этап 8, "DECISIONS №4"]
+    note: >-
+      Калибровка уровней активации (домен Offers) и нагрузочный набор для НФТ
+      «до 5 млн записей». Рандомизации нет, для обучения uplift не годится.
+      Лицензия требует указания источника.
+    gost: >-
+      T-ECD: T-Tech E-commerce Cross-Domain Dataset : набор данных / Т-Технологии //
+      Hugging Face : сайт. – URL: https://huggingface.co/datasets/t-tech/T-ECD
+      (дата обращения: 19.09.2026).
+
+  - id: dano-cashback-doc
+    kind: documentation
+    lang: ru
+    title: "Описание набора данных транзакционной активности клиентов банка (кэшбэк-программа, 2022)"
+    publisher: "НИУ ВШЭ, проект DANO"
+    year: 2022
+    url: https://dano.hse.ru/mirror/pubs/share/796520525
+    accessed: 2026-10-01
+    grade: B
+    used_in: [DATA_PASSPORT.md источник 1]
+    note: >-
+      Документация к выгрузке партнёрского кэшбэка. Даёт границы окна «до»
+      (с 2022-01-01 по 2022-08-01, то есть 7 месяцев), расшифровку колонок и
+      указание, что активации и просмотры измерены за последние 3 месяца.
+      Границы окна «последние 3 месяца» и критерий отбора клиентов не указаны;
+      число категорий в тексте (14) расходится с перечнем и с файлом (17).
+    gost: >-
+      Описание набора данных транзакционной активности клиентов банка
+      (кэшбэк-программа, 2022) / НИУ ВШЭ, проект DANO : сайт. – URL:
+      https://dano.hse.ru/mirror/pubs/share/796520525 (дата обращения: 01.10.2026).
+
+  - id: cashback-export
+    kind: dataset
+    lang: ru
+    title: "Выгрузка партнёрского кэшбэка (учебный набор)"
+    year: 2022
+    grade: C
+    used_in: [DATA_PASSPORT.md источник 1]
+    note: >-
+      50 000 клиентов. Документация найдена 2026-10-01 — [[dano-cashback-doc]]:
+      окна, расшифровка колонок и механика программы известны, критерий отбора
+      клиентов по-прежнему нет. Сам файл в список литературы не идёт (в списке
+      стоит документация), в тексте главы 2 описывается как учебный набор.
+      Грейд C: используется для формы распределений и уровней отклика,
+      содержательных утверждений о поведении клиентов на нём не строится.
+
+  # ——— экономика: стоимость коммуникации ———
+
+  - id: frankrg-mobile-2025
+    kind: industry-report
+    lang: ru
+    authors: [Frank RG]
+    title: "Mobile. 2025. Benchmark. Исследование эффективности смс-коммуникации"
+    year: 2025
+    url: https://frankrg.com/wp-content/uploads/2025/05/f751ece28ef1.pdf
+    accessed: 2026-09-19
+    grade: B
+    used_in: [docs/cost_inputs.yaml sms]
+    note: >-
+      Единственный найденный источник цен именно по банкам: 7 банков, 6 из ТОП-15.
+      Рекламная SMS 3,2 ₽ (2024), средняя по типам 2,4 ₽, рост +26,3% г/г,
+      +25% в I кв. 2025. Базовый якорь для сценария «цена из источника».
+    gost: >-
+      Mobile. 2025. Benchmark. Исследование эффективности смс-коммуникации /
+      Frank RG. – 2025. – URL:
+      https://frankrg.com/wp-content/uploads/2025/05/f751ece28ef1.pdf
+      (дата обращения: 19.09.2026).
+
+  - id: frankmedia-sms-price
+    kind: media
+    lang: ru
+    title: "Как растут цены на СМС-рассылки для банков"
+    container: "Frank Media"
+    url: https://frankmedia.ru/201832
+    accessed: 2026-09-19
+    grade: C
+    used_in: [docs/cost_inputs.yaml sms]
+    gost: >-
+      Как растут цены на СМС-рассылки для банков // Frank Media : сайт. – URL:
+      https://frankmedia.ru/201832 (дата обращения: 19.09.2026).
+
+  - id: frankmedia-sms-push
+    kind: media
+    lang: ru
+    title: "СМС или push: как банки экономят на коммуникации с клиентами"
+    container: "Frank Media"
+    year: 2021
+    url: https://frankmedia.ru/46941
+    accessed: 2026-09-19
+    grade: C
+    used_in: [docs/cost_inputs.yaml push]
+    note: "Источник утверждения, что push через собственное приложение банка бесплатны, кроме затрат на разработку. Это развилка для главы 3."
+    gost: >-
+      СМС или push: как банки экономят на коммуникации с клиентами // Frank Media :
+      сайт. – 2021. – URL: https://frankmedia.ru/46941 (дата обращения: 19.09.2026).
+
+  - id: altcraft-rassylka
+    kind: media
+    lang: ru
+    title: "Сколько стоит рассылка: email, SMS, push и мессенджеры"
+    container: Altcraft
+    year: 2025
+    url: https://altcraft.com/ru/blog/iz-chego-skladyvaetsya-byudzhet-rassylki
+    accessed: 2026-09-19
+    grade: C
+    used_in: [docs/cost_inputs.yaml push, docs/cost_inputs.yaml sms]
+    note: "Опорная вилка: push 0,10–0,15 ₽, рекламные SMS 5,5–6 ₽, сервисные 3–4 ₽. Статус НДС не указан."
+    gost: >-
+      Сколько стоит рассылка: email, SMS, push и мессенджеры // Altcraft : сайт. –
+      2025. – URL: https://altcraft.com/ru/blog/iz-chego-skladyvaetsya-byudzhet-rassylki
+      (дата обращения: 19.09.2026).
+
+  - id: finmarket-abr-tariffs
+    kind: media
+    lang: ru
+    title: "Ассоциация банков России призвала усилить контроль за тарифами операторов связи"
+    container: "Интерфакс-Финмаркет"
+    year: 2026
+    url: https://www.finmarket.ru/main/article/6679830
+    accessed: 2026-09-19
+    grade: C
+    used_in: [docs/cost_inputs.yaml sms]
+    note: "Рост тарифов операторов на 25–50% с начала 2026 года. Основание для индексации цены SMS."
+    gost: >-
+      Ассоциация банков России призвала усилить контроль за тарифами операторов связи
+      // Интерфакс-Финмаркет : сайт. – 2026. – URL:
+      https://www.finmarket.ru/main/article/6679830 (дата обращения: 19.09.2026).
+
+  - id: adindex-packet-tariffs
+    kind: media
+    lang: ru
+    title: "Операторы вводят пакетные тарифы на СМС-рассылки"
+    container: AdIndex
+    year: 2025
+    url: https://adindex.ru/news/marketing/2025/11/13/339078.phtml
+    accessed: 2026-09-19
+    grade: C
+    used_in: [docs/cost_inputs.yaml sms, "PLAN.md ограничения главы 3"]
+    note: >-
+      КРИТИЧНО ДЛЯ ГЛАВЫ 3. Билайн и МегаФон с осени 2025 тарифицируют уникального
+      абонента в месяц, а не сообщение: у МегаФона 30 ₽ за 1–5 рекламных SMS на
+      абонента, 6 ₽ за штуку с 21-го. Линейная модель «цена × контакты» при этом
+      ломается, причём против точечного таргетинга. Требует сверки по первоисточнику.
+    gost: >-
+      Операторы вводят пакетные тарифы на СМС-рассылки // AdIndex : сайт. – 2025. –
+      URL: https://adindex.ru/news/marketing/2025/11/13/339078.phtml
+      (дата обращения: 19.09.2026).
+
+  - id: vcru-callcenter-2025
+    kind: media
+    lang: ru
+    title: "Услуги колл-центров в 2025 году: цифры и реальные примеры"
+    container: vc.ru
+    year: 2025
+    url: https://vc.ru/marketing/2168127-uslugi-koll-tsentrov-2025
+    accessed: 2026-09-19
+    grade: C
+    used_in: [docs/cost_inputs.yaml call]
+    note: "Опорная вилка по звонку: 40–60 ₽ за состоявшийся разговор."
+    gost: >-
+      Услуги колл-центров в 2025 году: цифры и реальные примеры // vc.ru : сайт. –
+      2025. – URL: https://vc.ru/marketing/2168127-uslugi-koll-tsentrov-2025
+      (дата обращения: 19.09.2026).
+
+  - id: occ-callcenter-2026
+    kind: media
+    lang: ru
+    title: "Стоимость аутсорсинга колл-центра в 2026 году"
+    container: "OCC Group"
+    year: 2026
+    url: https://occ-group.ru/blog/stoimost-autsorsinga-koll-tsentra-v-2026-godu
+    accessed: 2026-09-19
+    grade: C
+    used_in: [docs/cost_inputs.yaml call]
+    note: "Исходящие 10–22 ₽/мин; голосовой робот 4–7 ₽ за контакт — основание для отдельного канала."
+    gost: >-
+      Стоимость аутсорсинга колл-центра в 2026 году // OCC Group : сайт. – 2026. –
+      URL: https://occ-group.ru/blog/stoimost-autsorsinga-koll-tsentra-v-2026-godu
+      (дата обращения: 19.09.2026).
+
+  - id: skorozvon-dozvon
+    kind: media
+    lang: ru
+    title: "6 причин низкой дозваниваемости при обзвоне"
+    container: Skorozvon
+    year: 2026
+    url: https://skorozvon.ru/articles/6-prichin-nizkoj-dozvanivaemosti-pri-obzvone
+    accessed: 2026-09-19
+    grade: C
+    used_in: [docs/cost_inputs.yaml call]
+    note: "Контактность 40–60% по тёплой базе, 20–35% по холодной; до 30% «успешных» соединений — автоответчики."
+    gost: >-
+      6 причин низкой дозваниваемости при обзвоне // Skorozvon : сайт. – 2026. –
+      URL: https://skorozvon.ru/articles/6-prichin-nizkoj-dozvanivaemosti-pri-obzvone
+      (дата обращения: 19.09.2026).
+
+  # ——— экономика: прайсы (розничные, малые объёмы; используются как проверка порядка величины) ———
+
+  - id: price-sigma
+    kind: price-list
+    lang: ru
+    title: "SIGMA messaging: тарифы и mobile push"
+    url: https://sigmasms.ru/tariff/
+    accessed: 2026-09-19
+    grade: A
+    used_in: [docs/cost_inputs.yaml push, docs/cost_inputs.yaml sms]
+    note: "push от 0,03 ₽; SMS 6,59–10,19 ₽ по операторам. Цены с НДС. Второй адрес: https://sigmasms.ru/mobile-push/"
+    gost: >-
+      SIGMA messaging : тарифы : сайт. – URL: https://sigmasms.ru/tariff/
+      (дата обращения: 19.09.2026).
+
+  - id: price-smsru
+    kind: price-list
+    lang: ru
+    title: "SMS.RU: цены"
+    url: https://sms.ru/price
+    accessed: 2026-09-19
+    grade: A
+    used_in: [docs/cost_inputs.yaml sms]
+    note: "8,36–8,50 ₽ с НДС, малые объёмы."
+    gost: >-
+      SMS.RU : цены : сайт. – URL: https://sms.ru/price (дата обращения: 19.09.2026).
+
+  - id: price-smsc
+    kind: price-list
+    lang: ru
+    title: "SMSC.RU: тарифы"
+    url: https://smsc.ru/tariffs/
+    accessed: 2026-09-19
+    grade: A
+    used_in: [docs/cost_inputs.yaml sms]
+    note: "9,80 ₽ на минимальном плане, скидки за объём."
+    gost: >-
+      SMSC.RU : тарифы : сайт. – URL: https://smsc.ru/tariffs/ (дата обращения: 19.09.2026).
+
+  - id: price-idgtl
+    kind: price-list
+    lang: ru
+    title: "i-Digital: цены на услуги"
+    url: https://i-dgtl.ru/prices/
+    accessed: 2026-09-19
+    grade: A
+    used_in: [docs/cost_inputs.yaml sms, docs/cost_inputs.yaml push]
+    note: "SMS Promo 10,07 ₽. Отдельно — push через приложение Т-Банка с заявленной доходимостью 80%: https://i-dgtl.ru/produkty-i-uslugi/push-cherez-t-bank/"
+    gost: >-
+      i-Digital : цены на услуги : сайт. – URL: https://i-dgtl.ru/prices/
+      (дата обращения: 19.09.2026).
+
+  - id: price-p1sms
+    kind: price-list
+    lang: ru
+    title: "P1SMS: цены на SMS-рассылки"
+    url: https://p1sms.ru/ceny-na-sms-rassylki
+    accessed: 2026-09-19
+    grade: A
+    used_in: [docs/cost_inputs.yaml sms]
+    note: "2,92 ₽ с цифрового имени, 6,67–12,50 ₽ с общего, без НДС. Нижняя граница найденного разброса."
+    gost: >-
+      P1SMS : цены на SMS-рассылки : сайт. – URL: https://p1sms.ru/ceny-na-sms-rassylki
+      (дата обращения: 19.09.2026).
+
+  - id: price-mindbox
+    kind: price-list
+    lang: ru
+    title: "Mindbox: тарифы"
+    url: https://mindbox.ru/documents/pricing/
+    accessed: 2026-09-19
+    grade: A
+    used_in: [docs/cost_inputs.yaml push]
+    note: "Модель «абонплата + доли копейки за запись»: при банковских объёмах переменная часть стремится к нулю."
+    gost: >-
+      Mindbox : тарифы : сайт. – URL: https://mindbox.ru/documents/pricing/
+      (дата обращения: 19.09.2026).
+
+  - id: price-kolocall
+    kind: price-list
+    lang: ru
+    title: "Kolocall: цены"
+    url: https://kolocall.com/price/
+    accessed: 2026-09-19
+    grade: A
+    used_in: [docs/cost_inputs.yaml call]
+    note: "39 000 ₽ / 1500 мин = 26 ₽/мин в пакете, 19 ₽/мин сверх, плюс 1 ₽ за попытку вызова."
+    gost: >-
+      Kolocall : цены : сайт. – URL: https://kolocall.com/price/
+      (дата обращения: 19.09.2026).
+
+  - id: price-novacontact
+    kind: price-list
+    lang: ru
+    title: "NovaContact: цены"
+    url: https://novacontact.ru/price
+    accessed: 2026-09-19
+    grade: A
+    used_in: [docs/cost_inputs.yaml call]
+    note: "106 000 ₽ / 3000 мин и 429 000 ₽ / 12 000 мин — 35–36 ₽/мин."
+    gost: >-
+      NovaContact : цены : сайт. – URL: https://novacontact.ru/price
+      (дата обращения: 19.09.2026).
+
+  # ——— экономика: рынок кэшбэка ———
+
+  - id: banki-ru-cashback
+    kind: industry-report
+    lang: ru
+    title: "Как банки рассчитывают и начисляют кешбэк клиентам: исследование Банки.ру"
+    year: 2025
+    url: https://finance.mail.ru/article/stalo-izvestno-kak-banki-nachislyayut-keshbek-za-pokupki-po-kartam-65577811/
+    accessed: 2026-09-19
+    grade: B
+    used_in: [docs/cost_inputs.yaml benchmarks]
+    note: >-
+      Наиболее частый месячный лимит кэшбэка 3000 ₽ (у 46–55% карт); 70% карт
+      позволяют тратить баллы у партнёров. Второе — доля КАРТ с опцией, а не доля
+      партнёрских покупок в обороте: последней в открытых источниках нет.
+    gost: >-
+      Как банки рассчитывают и начисляют кешбэк клиентам: исследование Банки.ру //
+      Финансы Mail : сайт. – 2025. – URL:
+      https://finance.mail.ru/article/stalo-izvestno-kak-banki-nachislyayut-keshbek-za-pokupki-po-kartam-65577811/
+      (дата обращения: 19.09.2026).
+
+  - id: tj-cashback-2026
+    kind: media
+    lang: ru
+    title: "Выплаты кэшбэка банками сократились на 10% за год: исследование аналитиков ВТБ"
+    container: "Т—Ж"
+    year: 2026
+    url: https://t-j.ru/news/cashback-minus-10/
+    accessed: 2026-09-19
+    grade: C
+    used_in: [docs/cost_inputs.yaml benchmarks]
+    note: "200 млрд ₽ выплат за I полугодие 2026."
+    gost: >-
+      Выплаты кэшбэка банками сократились на 10% за год: исследование аналитиков ВТБ
+      // Т—Ж : сайт. – 2026. – URL: https://t-j.ru/news/cashback-minus-10/
+      (дата обращения: 19.09.2026).
+
+  - id: rbc-cashback-forecast
+    kind: media
+    lang: ru
+    title: "Выплаты кешбэка в 2026 году могут достичь 473 млрд рублей: прогноз ВТБ"
+    year: 2026
+    url: https://finance.mail.ru/article/smi-banki-urezali-keshbek-rossiyanam-v-pervom-polugodii-2026-goda-69219661/
+    accessed: 2026-09-19
+    grade: C
+    used_in: [docs/cost_inputs.yaml benchmarks]
+    note: "Методику оценки банк не раскрыл — только порядок величины."
+    gost: >-
+      Выплаты кешбэка в 2026 году могут достичь 473 млрд рублей: прогноз ВТБ //
+      Финансы Mail : сайт. – 2026. – URL:
+      https://finance.mail.ru/article/smi-banki-urezali-keshbek-rossiyanam-v-pervom-polugodii-2026-goda-69219661/
+      (дата обращения: 19.09.2026).
+
+  # --- добавлено 2026-10-08: источники главы 1, пришедшие из черновика ВКР (июнь 2026) ---
+  - id: efremov-2018
+    kind: article
+    lang: ru
+    authors: [Ефремов П. А., Васильев И. И.]
+    title: >-
+      Банковские технологии на современном этапе
+    container: Финансовые рынки и банки
+    year: 2018
+    issue: 2
+    pages: 42–47
+    url: https://finmarketbank.ru/upload/iblock/3d4/%D0%A4%D0%A0%D0%B8%D0%91%20%E2%84%962%202018.pdf
+    accessed: 2026-10-08
+    grade: A
+    used_in: [ВКР гл. 1, 1.1.1]
+    note: >-
+      Утверждение: банковские технологии делятся на две категории — для внутренней
+      работы банка и для каналов работы с клиентами. Текст сверен автором при
+      написании черновика ВКР; выпуск и начальная страница (с. 42) дополнительно
+      подтверждены по содержанию № 2 за 2018 год на сайте журнала 08.10.2026.
+    gost: >-
+      Ефремов, П. А. Банковские технологии на современном этапе / П. А. Ефремов, И. И. Васильев // Финансовые рынки и банки. – 2018. – № 2. – С. 42–47.
+
+  - id: cnews-appstore-2023
+    kind: web
+    lang: ru
+    title: >-
+      «Тинькофф» и десяток других российских банков изгнаны из магазина приложений для iPhone
+    container: CNews
+    year: 2023
+    url: https://www.cnews.ru/news/top/2023-03-02_apple_udalila_prilozheniya_tinkoff-banka
+    accessed: 2026-10-08
+    grade: C
+    used_in: [ВКР гл. 1, 1.1.1, статья НИРС — введение]
+    note: >-
+      Опубликовано 02.03.2023. Дословно: «В аналогичной ситуации оказалось ещё около
+      10 российских банков»; поимённо названы «Тинькофф», «Зенит», «Левобережный»,
+      «Приморье», «Уралсиб», СДМ, Металлоинвестбанк, «МТС банк». Формулировка
+      «более десяти КРУПНЫХ банков» из черновика источником не подтверждается —
+      заменена на «„Тинькофф“ и ещё около десяти банков». В статье НИРС v3 во
+      введении стоит старая формулировка без ссылки — поправить. Автор на странице
+      указан противоречиво (подпись и метаданные расходятся), поэтому запись по ГОСТ
+      — под заглавием.
+    gost: >-
+      «Тинькофф» и десяток других российских банков изгнаны из магазина приложений для iPhone // CNews : сайт. – 2023. – URL: https://www.cnews.ru/news/top/2023-03-02_apple_udalila_prilozheniya_tinkoff-banka (дата обращения: 08.10.2026).
+
+  - id: newretail-pochtabank-survey-2023
+    kind: web
+    lang: ru
+    title: >-
+      85% россиян назвали кешбэк главным критерием выбора банковской карты
+    container: New Retail
+    year: 2023
+    url: https://new-retail.ru/novosti/retail/85_rossiyan_nazvali_keshbek_glavnym_kriteriem_vybora_bankovskoy_karty/
+    accessed: 2026-10-08
+    grade: C
+    used_in: [ВКР гл. 1, 1.1.1, статья НИРС — введение]
+    note: >-
+      Опубликовано 26.09.2023. Совместный опрос Почта Банка и маркетплейса «Выберу.ру»,
+      около 2 000 человек 18–65 лет из разных регионов; 85 % считают кешбэк в
+      подходящих категориях ключевым критерием выбора дебетовой карты для
+      повседневных покупок (годом ранее — 70 %). Первоисточник — пресс-релиз
+      https://www.pochtabank.ru/news/709184 — 08.10.2026 не открылся (таймаут при
+      проверке); если откроется из браузера, заменить ссылку на него и поднять грейд до B.
+    gost: >-
+      85% россиян назвали кешбэк главным критерием выбора банковской карты // New Retail : сайт. – 2023. – URL: https://new-retail.ru/novosti/retail/85_rossiyan_nazvali_keshbek_glavnym_kriteriem_vybora_bankovskoy_karty/ (дата обращения: 08.10.2026).
+
+  # ——— аналоги: раздел 1.2.2 главы 1 и КТ 30.10 (добавлено 24.10.2026) ———
+
+  - id: altcraft-onprem
+    kind: documentation
+    lang: en
+    title: "Altcraft On-Premises"
+    publisher: Altcraft
+    year: 2026
+    url: https://altcraft.com/on-prem
+    accessed: 2026-10-24
+    grade: B
+    used_in: [ВКР гл. 1, 1.2.2, ICP_2026_Сравнение_с_аналогами]
+    note: >-
+      Страница продукта (не пользовательская документация, поэтому B). «Client data
+      never leaves your perimeter»; виртуализация, контейнеры, выделенное
+      оборудование; A/B/n Testing; AI Recommendations для персонализации контента;
+      лицензия по модулям и параметрам инфраструктуры, ТЗ и расчёт — по запросу;
+      152-ФЗ. Uplift, контрольные группы и контактная политика на странице не
+      упомянуты.
+    gost: >-
+      Altcraft On-Premises // Altcraft : сайт. – URL: https://altcraft.com/on-prem
+      (дата обращения: 24.10.2026).
+
+  - id: altcraft-gcg-2025
+    kind: web
+    lang: ru
+    authors: [Баров Д.]
+    title: "Глобальная контрольная группа: теория и практика"
+    container: "Sostav.ru, блог Altcraft Platform"
+    year: 2025
+    url: https://www.sostav.ru/blogs/254470/59631
+    accessed: 2026-10-24
+    grade: C
+    used_in: [ВКР гл. 1, 1.2.2, ICP_2026_Сравнение_с_аналогами]
+    note: >-
+      Опубликовано 16.04.2025, автор — ведущий системный аналитик Altcraft.
+      ГКГ на всю базу или сегмент, размер 5–25 %, не менее 1000 профилей,
+      случайный отбор или список, запрет попадания в ГКГ два раза подряд;
+      сравнение групп по ключевым метрикам — эффект на уровне группы, оценки
+      эффекта на клиента нет. Первоисточник в документации —
+      https://guides.altcraft.com/user-guide/super-campaigns/lcg — 24.10.2026 не
+      открылся; если откроется из браузера, сослаться на него (A). 24.10.2026 Ева
+      подтвердила по опыту работы: в Altcraft есть тесты с локальным и глобальным
+      контролем, расчёта uplift нет.
+    gost: >-
+      Баров, Д. Глобальная контрольная группа: теория и практика / Д. Баров //
+      Sostav.ru : сайт. – 2025. – URL: https://www.sostav.ru/blogs/254470/59631
+      (дата обращения: 24.10.2026).
+
+  - id: altcraft-cdp-banks-2025
+    kind: web
+    lang: ru
+    title: "CDP для банков: автоматизация маркетинга от заявки до повторной продажи"
+    container: "Sostav.ru, блог Altcraft Platform"
+    year: 2025
+    url: https://www.sostav.ru/blogs/254470/73222
+    accessed: 2026-10-24
+    grade: C
+    used_in: [ВКР гл. 1, 1.2.2, ICP_2026_Сравнение_с_аналогами]
+    note: >-
+      Опубликовано 16.12.2025, рекламный материал вендора. Установка на серверах
+      банка; «Политики отправки» и лимиты частоты (пример: не больше двух писем и
+      одного SMS в неделю; кейс БНБ-Банка — не больше трёх сообщений в неделю);
+      ML и uplift не упомянуты. Автор не указан — запись под заглавием.
+    gost: >-
+      CDP для банков: автоматизация маркетинга от заявки до повторной продажи //
+      Sostav.ru : сайт. – 2025. – URL: https://www.sostav.ru/blogs/254470/73222
+      (дата обращения: 24.10.2026).
+
+  - id: mindbox-yc-2023
+    kind: web
+    lang: ru
+    title: "Как расти на 30% в год: маркетинговая платформа Mindbox в Yandex Cloud"
+    container: Yandex Cloud
+    year: 2023
+    url: https://yandex.cloud/ru-kz/cases/mindbox
+    accessed: 2026-10-24
+    grade: C
+    used_in: [ВКР гл. 1, 1.2.2]
+    note: >-
+      Кейс от 13.11.2023. Большая часть сервисов Mindbox — в Yandex Cloud,
+      сервисы с пользовательскими данными — в собственном ЦОДе Mindbox; варианта
+      установки в контуре клиента не упомянуто. Нужен только как пример облачной
+      CDP в 1.2.2.
+    gost: >-
+      Как расти на 30% в год: маркетинговая платформа Mindbox в Yandex Cloud //
+      Yandex Cloud : сайт. – 2023. – URL: https://yandex.cloud/ru-kz/cases/mindbox
+      (дата обращения: 24.10.2026).
+
+  - id: causalml-docs
+    kind: documentation
+    lang: en
+    title: "CausalML: documentation"
+    publisher: "Uber Technologies"
+    year: 2026
+    url: https://causalml.readthedocs.io/en/stable/
+    accessed: 2026-10-24
+    grade: A
+    used_in: [ВКР гл. 1, 1.2.2, ICP_2026_Сравнение_с_аналогами]
+    note: >-
+      Версия 0.18.0 от 12.10.2026, Apache 2.0, Python ≥ 3.11 (pypi.org/project/causalml).
+      Methodology: S-, T-, X-, R-learner, DR-learner; uplift-деревья (KL, ED, Chi,
+      DDP, IDDP, IT, CIT, CTS); «Value optimization methods» — Counterfactual Value
+      Estimator со стоимостью воздействия, PolicyLearner, Counterfactual Unit
+      Selection («highly experimental»). Метрики (causalml.metrics.visualize):
+      qini_score, auuc_score, plot_qini, plot_gain, plot_lift. Планирования
+      эксперимента, контактной политики и интерфейса нет.
+    gost: >-
+      CausalML : documentation : сайт. – URL: https://causalml.readthedocs.io/en/stable/
+      (дата обращения: 24.10.2026).
+
+  - id: sas-mo-docs
+    kind: documentation
+    lang: en
+    title: "About Marketing Optimization"
+    publisher: "SAS Institute, SAS Help Center"
+    year: 2026
+    url: https://documentation.sas.com/doc/en/cintcdc/production.a/cintug/optimize-about.htm
+    accessed: 2026-10-24
+    grade: A
+    used_in: [ВКР гл. 1, 1.2.2]
+    note: >-
+      Обновлено 11.08.2026. Цели: максимизация ожидаемой выручки, прибыли или
+      числа откликов, минимизация стоимости кампании; ограничения: бюджет и
+      размер ячеек, мощность каналов, «contact policy restrictions». Название
+      продукта на странице не указано.
+    gost: >-
+      About Marketing Optimization // SAS Help Center : сайт. – URL:
+      https://documentation.sas.com/doc/en/cintcdc/production.a/cintug/optimize-about.htm
+      (дата обращения: 24.10.2026).
+
+  - id: sas-em-71m1
+    kind: documentation
+    lang: en
+    title: "What's New in SAS Enterprise Miner 7.1 M1"
+    publisher: "SAS Institute"
+    year: 2011
+    url: https://support.sas.com/documentation/cdl/en/whatsnew/64209/HTML/default/emwhatsnew71m1.htm
+    accessed: 2026-10-24
+    grade: A
+    used_in: [ВКР гл. 1, 1.2.2]
+    note: >-
+      Узел Incremental Response «introduces modeling the marginal effect of a
+      treatment on individual outcomes», цель — найти «true responders»;
+      в релизе 7.1 M1 помечен как экспериментальный. Год 2011 — по релизу
+      SAS 9.3, на странице не указан; сверить перед внесением в список.
+    gost: >-
+      What's New in SAS Enterprise Miner 7.1 M1 // SAS Support : сайт. – URL:
+      https://support.sas.com/documentation/cdl/en/whatsnew/64209/HTML/default/emwhatsnew71m1.htm
+      (дата обращения: 24.10.2026).
+
+  - id: comnews-sas-2022
+    kind: media
+    lang: ru
+    title: "Американская SAS уволила 300 сотрудников в РФ и планирует процедуру банкротства"
+    container: ComNews
+    year: 2022
+    url: https://www.comnews.ru/content/219869/2022-04-19/2022-w16/amerikanskaya-sas-uvolila-300-sotrudnikov-rf-i-planiruet-proceduru-bankrotstva
+    accessed: 2026-10-24
+    grade: C
+    used_in: [ВКР гл. 1, 1.2.2]
+    note: >-
+      19.04.2022, со ссылкой на бывшего сотрудника (Интерфакс). Техподдержка
+      лицензий прекращена в феврале 2022, сотрудники уволены 11.04.2022; среди
+      клиентов — крупнейшие российские банки.
+    gost: >-
+      Американская SAS уволила 300 сотрудников в РФ и планирует процедуру
+      банкротства // ComNews : сайт. – 2022. – URL:
+      https://www.comnews.ru/content/219869/2022-04-19/2022-w16/amerikanskaya-sas-uvolila-300-sotrudnikov-rf-i-planiruet-proceduru-bankrotstva
+      (дата обращения: 24.10.2026).
