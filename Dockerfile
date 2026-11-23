@@ -6,9 +6,9 @@ FROM python:3.11-slim
 WORKDIR /app
 
 # make нужен точке входа (CMD make all) — в slim-образе его нет по умолчанию.
-# gcc/g++ — сборка C/C++-расширений econml из исходников (готового wheel
-# нет под linux/aarch64); на платформах с wheel-ом компилятор просто не используется.
-RUN apt-get update && apt-get install -y --no-install-recommends make gcc g++ \
+# Компилятор не требуется: все зависимости requirements.txt имеют готовые
+# wheels под linux/aarch64 и linux/amd64 (econml вынесен в requirements-stage5.txt).
+RUN apt-get update && apt-get install -y --no-install-recommends make \
     && rm -rf /var/lib/apt/lists/*
 
 # Сначала зависимости — слой кешируется отдельно от кода.

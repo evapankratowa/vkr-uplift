@@ -11,7 +11,6 @@ requests               # скачивание открытых наборов в
 # --- модели
 catboost
 scikit-uplift          # метрики uplift, загрузчики открытых RCT (X5, Hillstrom)
-econml                 # DR-learner, R-learner, Causal Forest (этап 5, опционально)
 # --- графика и ноутбуки
 matplotlib
 seaborn

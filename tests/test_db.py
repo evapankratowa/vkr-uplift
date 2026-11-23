@@ -178,6 +178,7 @@ def test_database_url_from_env(monkeypatch):
     """Строка подключения: DATABASE_URL, иначе дефолт учебного стенда."""
     from uplift_system.db import DEFAULT_DATABASE_URL
 
+    monkeypatch.delenv("DATABASE_URL", raising=False)  # compose передаёт переменную в контейнер
     assert database_url() == DEFAULT_DATABASE_URL
     monkeypatch.setenv("DATABASE_URL", "postgresql://user:pass@db:5432/base")
     assert database_url() == "postgresql://user:pass@db:5432/base"

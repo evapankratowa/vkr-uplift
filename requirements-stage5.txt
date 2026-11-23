@@ -1,0 +1,17 @@
+# Опциональные зависимости этапа 5: робастные оценки (DR-, R-learner)
+# и Causal Forest — обёртки над econml (src/uplift_system/models/robust.py,
+# forest.py). На дату публикации этап 5 — направление развития, обёртки
+# не реализованы, в сравнение архитектур не входят; поэтому зависимость
+# вынесена из requirements.txt и в Docker-образ не включается.
+#
+# Установка:  pip install -r requirements-stage5.txt
+#
+# Внимание (linux/aarch64, например Apple Silicon в Docker): на PyPI нет
+# готового wheel econml под эту платформу, а C-файлы в sdist сгенерированы
+# старой версией Cython и не совместимы с заголовками numpy 2.x. Сборка
+# возможна с перегенерацией Cython:
+#   pip install numpy cython scipy scikit-learn
+#   pip download econml --no-deps --no-binary econml -d /tmp/econml-src
+#   # распаковать, удалить *.c рядом с *.pyx, затем:
+#   pip install --no-build-isolation <распакованный-каталог>
+econml
