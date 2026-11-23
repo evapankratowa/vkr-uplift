@@ -1,7 +1,6 @@
 # vkr-uplift — система определения сегментов коммуникации на uplift-моделировании
 
-[![CI](https://github.com/USER/REPO/actions/workflows/ci.yml/badge.svg)](https://github.com/USER/REPO/actions/workflows/ci.yml)
-<!-- Заглушка: заменить USER/REPO на реальный адрес репозитория после публикации на GitHub. -->
+[![CI](https://github.com/evapankratowa/vkr-uplift/actions/workflows/ci.yml/badge.svg)](https://github.com/evapankratowa/vkr-uplift/actions/workflows/ci.yml)
 
 Кодовая часть ВКР «Разработка информационно-аналитической системы определения
 сегментов коммуникации для клиентов банка с помощью uplift modeling»
