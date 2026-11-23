@@ -33,7 +33,7 @@ services:
       - ./configs:/app/configs
     environment:
       DATABASE_URL: postgresql://uplift:uplift@db:5432/uplift
-    # По умолчанию прогоняет весь пайплайн: simulate -> train -> evaluate -> segments -> checks.
+    # По умолчанию прогоняет весь пайплайн: simulate -> train -> evaluate -> economics -> segments -> checks.
     # Отдельный этап: docker compose run --rm app make simulate
 
 volumes:

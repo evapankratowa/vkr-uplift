@@ -1,13 +1,13 @@
-# CI: линт и тесты на push/PR в master. Два независимых job:
+# CI: линт и тесты на push/PR в main. Два независимых job:
 #   test — быстрые тесты без БД (pytest -m "not docker");
 #   test-docker — живые тесты слоя БД против сервиса postgres:16 (pytest -m docker).
 name: CI
 
 on:
   push:
-    branches: [master]
+    branches: [main]
   pull_request:
-    branches: [master]
+    branches: [main]
 
 jobs:
   test:

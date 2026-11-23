@@ -20,11 +20,15 @@
 
 ## Ожидаемый результат
 
-Успешный прогон создаёт в `output/` таблицы и графики с префиксом `VKR_uplift_`:
-сравнение архитектур по Qini/AUUC (`..._architectures_*.csv`), кривые Qini
-(`..._qini_curves_*.png`), сравнение стратегий отбора
-(`..._value_by_control_share_*.png`) и CSV сегмента для рассылки.
-Контрольные числа для сверки — в [docs/DATA_PASSPORT.md](docs/DATA_PASSPORT.md)
+Успешный прогон создаёт в `output/` таблицы и графики с префиксом
+`<имя_каталога_проекта>_` (в Docker — `app_`): сравнение архитектур по Qini,
+uplift@30% и ценности стратегии
+(`*_architectures_*.csv`), кривые Qini (`*_qini_curves_*.png`), экономику кампании
+(`*_economics_*.csv`) и CSV/Parquet сегмента для рассылки (`*_segment[_ab]_*`).
+Проверяемый эталон малого прогона (N=2000, REPEATS=1) —
+[tests/golden/golden_metrics.json](tests/golden/golden_metrics.json); команда
+`pytest tests/test_golden.py` сверяет метрики архитектур и экономики с допуском 1e-6.
+Контрольные числа исходных данных — в [docs/DATA_PASSPORT.md](docs/DATA_PASSPORT.md)
 (раздел «Контрольные числа»: 50 000 строк, доля отклика 0,4795,
 X5 — 200 039 строк с долей теста 0,50 и др.).
 
@@ -33,14 +37,14 @@ X5 — 200 039 строк с долей теста 0,50 и др.).
 ```bash
 # Вариант 1: Docker (нужен только Docker)
 docker compose up --build        # поднимет PostgreSQL 16 и прогонит весь пайплайн
-# проверка БД с хоста (порт 5433: на 5432 часто сидит локальный postgres):
-psql -h localhost -p 5433 -U uplift -d uplift -c '\dn'   # схемы: uplift, uplift_dw
+# проверка БД через контейнер (отдельный psql-клиент и пароль не нужны):
+docker compose exec db psql -U uplift -d uplift -c '\dn'   # схемы: uplift, uplift_dw
 # сверка контейнерного прогона с золотыми эталонами (tests/golden/, допуск 1e-6):
 docker compose run --rm app pytest tests/test_golden.py
 
 # Вариант 2: локально (нужен Python 3.11)
 make install                     # venv + зависимости + пакет в режиме разработки
-make test                        # 111 тестов, данных и сети не требуют
+make test                        # 105 passed + 6 skipped без PostgreSQL; золотые включены
 make all                         # simulate → train → evaluate → economics → segments → checks
 
 # опционально, нужна прямая сеть (хосты открытых датасетов):
@@ -48,6 +52,9 @@ make data                        # скачать открытые RCT (X5, Hill
 ```
 
 Команды выполняются по порядку в чистом клоне без устных дополнений автора.
+Docker `up` остаётся в режиме логов, пока запущена БД: дождитесь в нём строки
+`app-1 exited with code 0`, а проверки БД и золотых чисел выполните из второго
+терминала в том же каталоге. После проверок `up` можно остановить через Ctrl+C.
 `make data` **опционален** и в `make all` не входит: без него пайплайн честно
 предупреждает и подставляет синтетические ковариаты (fallback, seed в `configs/`),
 а связанные проверки в `make checks` получают жёлтый вердикт «нет входа», а не
@@ -60,8 +67,8 @@ make data                        # скачать открытые RCT (X5, Hill
 - PostgreSQL 16 — только если нужен слой БД (в Docker поднимается сам);
 - прямая сеть — только для опционального `make data`.
 
-Зависимости: [requirements.txt](requirements.txt), пакет — `src/uplift_system`
-(`pip install -e .`, консольная команда `uplift`).
+Зависимости: [requirements.txt](requirements.txt), версии прямых зависимостей
+зафиксированы; пакет — `src/uplift_system` (`pip install -e .`, консольная команда `uplift`).
 
 ## Порядок воспроизведения
 
@@ -72,8 +79,8 @@ make data                        # скачать открытые RCT (X5, Hill
 | 1. Данные (опционально) | `make data` | скачивает открытые RCT в `data/raw/`; без него — синтетический fallback |
 | 2. БД | `docker compose up db` | применяет `db/001_init.sql` (схемы `uplift`, `uplift_dw`); с хоста БД на порту **5433** (`psql -p 5433`) |
 | 3. Симуляция A/B | `make simulate` | размер выборки, MDE, рандомизация, A/A, оценка ATE |
-| 4. Модели | `make train` | S-, T-, X-learner, класс-трансформация; DR-, R-learner, Causal Forest |
-| 5. Оценка | `make evaluate` | Qini, AUUC, uplift@k; PEHE/Kendall на синтетике; ценность стратегии |
+| 4. Модели | `make train` | S-, T-, X-learner, класс-трансформация и baseline; DR-, R-learner и Causal Forest отключены в конфиге |
+| 5. Оценка | `make evaluate` | Qini, uplift@k; PEHE/Kendall на синтетике; ценность стратегии |
 | 6. Экономика | `make economics` | ценность кампании по каналам: три сценария цены SMS, бутстрап-ДИ |
 | 7. Сегмент | `make segments` | отбор под бюджет, проверка ограничений, выгрузка CSV/Parquet |
 | 8. Проверки | `make checks` | отчёт проверок в `checks/` |
@@ -137,7 +144,10 @@ CSV/Parquet сегмента для системы рассылок (форма�
 ├── models_store/        обученные модели joblib + манифест (создаётся make train)
 ├── checks/              отчёт проверок checks.json + markdown (создаётся make checks)
 ├── Dockerfile, docker-compose.yml   развёртывание без внешних зависимостей
-└── Makefile             единая точка входа: make all
+├── .github/workflows/ci.yml   ruff + pytest без БД и с PostgreSQL 16
+├── requirements.txt      зафиксированные версии прямых зависимостей
+├── LICENSE               лицензия MIT
+└── Makefile              единая точка входа: make all
 ```
 
 ## Правовой статус и обратная связь
@@ -150,7 +160,7 @@ CSV/Parquet сегмента для системы рассылок (форма�
 
 ## Статус
 
-Закрыто (код, тесты, эталоны):
+Закрыто (T1–T10; код, тесты, эталоны, Docker и CI):
 
 - [x] Данные загружены, слой 0 проверок пройден
 - [x] Симулятор эксперимента работает, A/A чистый, генератор валидирован
@@ -166,9 +176,10 @@ CSV/Parquet сегмента для системы рассылок (форма�
 - [x] Сборщик сегментов проходит тесты ограничений (xfail сняты)
 - [x] Золотые эталоны: `tests/test_golden.py` сверяет ключевые метрики малого
       прогона (N=2000, REPEATS=1) с `tests/golden/`, допуск 1e-6
-
-Осталось:
-
-- [ ] Проверка `docker compose up --build` на чистом образе (тикет T9)
-- [ ] GitHub Actions: lint + test на push, отдельный job с PostgreSQL (тикет T9)
-- [ ] Финальная вычитка репозитория перед публикацией (тикет T10)
+- [x] Локальная проверка: 105 passed, 6 skipped; `ruff check src tests` чистый
+- [x] `docker compose up --build`: контейнер приложения прогоняет весь пайплайн
+      и завершается с кодом 0; золотой тест в контейнере зелёный (T9)
+- [x] GitHub Actions: ruff + pytest без БД и отдельный job с PostgreSQL 16
+      на push/PR в `main` (T9)
+- [x] Финальная вычитка по 8 критериям README, чистый Quick Start,
+      контракты и git-история проверены (T10)

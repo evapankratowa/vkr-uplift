@@ -23,7 +23,7 @@ RUN pip install --no-cache-dir -e .
 
 # Данные не вшиваются в образ: data/ монтируется volume-ом (см. docker-compose.yml),
 # либо скачивается внутри контейнера: python -m uplift_system.datasets.open_data --dataset all
-# По умолчанию прогоняется весь пайплайн: simulate -> train -> evaluate -> segments -> checks.
+# По умолчанию прогоняется весь пайплайн: simulate -> train -> evaluate -> economics -> segments -> checks.
 # Отдельный этап: docker compose run --rm app make simulate
 # Сверка с золотыми эталонами tests/golden/ (допуск 1e-6):
 #   docker compose run --rm app pytest tests/test_golden.py

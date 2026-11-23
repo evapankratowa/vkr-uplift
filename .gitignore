@@ -16,6 +16,9 @@ data/processed/*
 # Производные артефакты: пересоздаются прогоном пайплайна
 output/*
 !output/**/.gitkeep
+models_store/
+checks/*
+!checks/**/.gitkeep
 
 # Секреты
 .env

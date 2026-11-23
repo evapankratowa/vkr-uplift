@@ -1,14 +1,21 @@
 # Каждая команда воспроизводима с чистого окружения. SEED зафиксирован в configs/.
-# UPLIFT — консольная команда пакета (появляется после make install); можно
-# переопределить, например: make all UPLIFT="python -m uplift_system.cli".
-UPLIFT ?= uplift
+# Локально цели используют .venv, созданный make install; в Docker, где venv нет,
+# используются команды системного Python. PYTHONPATH очищается от чужих пакетов.
+# UPLIFT можно переопределить вручную.
+VENV_PYTHON := .venv/bin/python
+PYTHON := env -u PYTHONPATH $(if $(wildcard $(VENV_PYTHON)),$(VENV_PYTHON),python)
+UPLIFT ?= env -u PYTHONPATH $(if $(wildcard .venv/bin/uplift),.venv/bin/uplift,uplift)
+PYTEST := env -u PYTHONPATH $(if $(wildcard .venv/bin/pytest),.venv/bin/pytest,pytest)
+RUFF := env -u PYTHONPATH $(if $(wildcard .venv/bin/ruff),.venv/bin/ruff,ruff)
 .PHONY: install lint test data simulate train evaluate economics segments checks all
 
 install:
-	python -m venv .venv && . .venv/bin/activate && pip install -r requirements.txt && pip install -e .
+	python -m venv .venv
+	env -u PYTHONPATH $(VENV_PYTHON) -m pip install -r requirements.txt
+	env -u PYTHONPATH $(VENV_PYTHON) -m pip install -e .
 
 lint:
-	ruff check src tests && ruff format --check src tests
+	$(RUFF) check src tests && $(RUFF) format --check src tests
 
 # Скачивает открытые наборы в data/raw. Шаг ОПЦИОНАЛЕН: требует прямую сеть
 # (хосты открытых датасетов) и не входит в make all — без него пайплайн идёт
@@ -17,10 +24,10 @@ lint:
 # ссылка в README, раздел «Входные и выходные данные»): положить файл как
 # data/raw/cashback_raw_2022-11-15.csv
 data:
-	python -m uplift_system.datasets.open_data --dataset all
+	$(PYTHON) -m uplift_system.datasets.open_data --dataset all
 
 test:
-	pytest
+	$(PYTEST)
 
 simulate:
 	$(UPLIFT) simulate --config configs/sim_base.yaml --experiment configs/experiment.yaml
