@@ -1,5 +1,8 @@
 # vkr-uplift — система определения сегментов коммуникации на uplift-моделировании
 
+[![CI](https://github.com/USER/REPO/actions/workflows/ci.yml/badge.svg)](https://github.com/USER/REPO/actions/workflows/ci.yml)
+<!-- Заглушка: заменить USER/REPO на реальный адрес репозитория после публикации на GitHub. -->
+
 Кодовая часть ВКР «Разработка информационно-аналитической системы определения
 сегментов коммуникации для клиентов банка с помощью uplift modeling»
 (РАНХиГС, 09.03.03 Прикладная информатика).
@@ -30,6 +33,10 @@ X5 — 200 039 строк с долей теста 0,50 и др.).
 ```bash
 # Вариант 1: Docker (нужен только Docker)
 docker compose up --build        # поднимет PostgreSQL 16 и прогонит весь пайплайн
+# проверка БД с хоста (порт 5433: на 5432 часто сидит локальный postgres):
+psql -h localhost -p 5433 -U uplift -d uplift -c '\dn'   # схемы: uplift, uplift_dw
+# сверка контейнерного прогона с золотыми эталонами (tests/golden/, допуск 1e-6):
+docker compose run --rm app pytest tests/test_golden.py
 
 # Вариант 2: локально (нужен Python 3.11)
 make install                     # venv + зависимости + пакет в режиме разработки
@@ -63,7 +70,7 @@ make data                        # скачать открытые RCT (X5, Hill
 | Этап | Команда | Что делает |
 |---|---|---|
 | 1. Данные (опционально) | `make data` | скачивает открытые RCT в `data/raw/`; без него — синтетический fallback |
-| 2. БД | `docker compose up db` | применяет `db/001_init.sql` (схемы `uplift`, `uplift_dw`) |
+| 2. БД | `docker compose up db` | применяет `db/001_init.sql` (схемы `uplift`, `uplift_dw`); с хоста БД на порту **5433** (`psql -p 5433`) |
 | 3. Симуляция A/B | `make simulate` | размер выборки, MDE, рандомизация, A/A, оценка ATE |
 | 4. Модели | `make train` | S-, T-, X-learner, класс-трансформация; DR-, R-learner, Causal Forest |
 | 5. Оценка | `make evaluate` | Qini, AUUC, uplift@k; PEHE/Kendall на синтетике; ценность стратегии |

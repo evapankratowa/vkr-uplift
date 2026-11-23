@@ -1,0 +1,72 @@
+# CI: линт и тесты на push/PR в master. Два независимых job:
+#   test — быстрые тесты без БД (pytest -m "not docker");
+#   test-docker — живые тесты слоя БД против сервиса postgres:16 (pytest -m docker).
+name: CI
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+    branches: [master]
+
+jobs:
+  test:
+    name: lint и тесты (без БД)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+
+      - name: Установка зависимостей
+        run: pip install -r requirements.txt
+
+      - name: Ruff (линт)
+        run: ruff check src tests
+
+      - name: Pytest (без docker-тестов)
+        run: pytest -m "not docker"
+
+  test-docker:
+    name: тесты слоя БД (postgres:16)
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_DB: uplift
+          POSTGRES_USER: uplift
+          POSTGRES_PASSWORD: uplift # учебный стенд, не для продуктива
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U uplift -d uplift"
+          --health-interval 5s
+          --health-timeout 3s
+          --health-retries 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Клиент psql
+        run: sudo apt-get update && sudo apt-get install -y --no-install-recommends postgresql-client
+
+      # Сервисы GitHub Actions не умеют монтировать /docker-entrypoint-initdb.d,
+      # поэтому DDL применяем явно; файл — артефакт главы 2, не менять.
+      - name: Инициализация схемы (db/001_init.sql)
+        run: PGPASSWORD=uplift psql -h localhost -p 5432 -U uplift -d uplift -v ON_ERROR_STOP=1 -f db/001_init.sql
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+
+      - name: Установка зависимостей
+        run: pip install -r requirements.txt
+
+      # Дефолт DATABASE_URL пакета — postgresql://uplift:uplift@localhost:5432/uplift,
+      # порт сервиса замаплен на тот же 5432, отдельная переменная не нужна.
+      - name: Pytest (только docker-тесты)
+        run: pytest -m docker

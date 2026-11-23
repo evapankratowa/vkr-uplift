@@ -24,3 +24,6 @@ select = ["E", "F", "I", "UP", "B", "SIM", "PD"]
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 addopts = "-q"
+markers = [
+    "docker: живые тесты против PostgreSQL из docker-compose (пропускаются без БД)",
+]
